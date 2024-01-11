@@ -9,11 +9,14 @@ export default function two_crystal_balls(breaks: boolean[]): number {
     let i = jmpAmount;
 
     //This loop finds the first position for when the ball breaks
-    for(; i < breaks.length; i += jmpAmount) {
-        if (breaks[i]) {
-            break;
-        }
+    while (i < breaks.length) {
+        if (breaks[i]) break;
+        i += jmpAmount;
     }
+
+    //Apparently you can write a for loop like this as well, cool...
+    //for (; i < breaks.length; i += jmpAmount) if (breaks[i]) break;
+
     //Jump to the last known previous position to see when the second ball breaks
     i -= jmpAmount;
 
