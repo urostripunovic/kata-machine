@@ -30,7 +30,41 @@ export default class Trie {
 
     delete(item: string): void {
         //a bit trickier, wikipedia has an example article
+        this.deleteWord(item, this.head, 0)
+    }
 
+    private deleteWord(item: string, curr: TrieNode | undefined, depth: number): void {
+        if (!curr) {
+            return;
+        }
+
+        if (item.length === depth) {
+            //console.log("before:",curr)
+            if (curr.isWord) curr.isWord = false;
+            if (!this.hasChildren(curr)) curr = undefined;
+            //console.log("after:",curr)
+            return;
+        }
+
+        //pre
+        const idx = this.idx(item[depth]);
+        depth++;
+        //recursion
+        this.deleteWord(item, curr.children[idx], depth)
+        //post
+        // delete the characters that are left behind
+        if (!this.hasChildren(curr?.children[idx - 1]) && !curr?.isWord) {
+            curr = undefined;
+        }
+    }
+
+    private hasChildren(parent: TrieNode | undefined): boolean {
+        for (const child in parent?.children) {
+            if (child) {
+                return true;
+            }
+        }
+        return false;
     }
 
     find(partial: string): string[] {
@@ -39,10 +73,11 @@ export default class Trie {
         return this.dfs(curr, [], partial);
     }
 
-    private getNode(partial: string): TrieNode | undefined {
-        let curr = this.head;
+    private getNode(item: string): TrieNode | undefined {
+        if (!this.head) return undefined;
 
-        for(const c of partial) {
+        let curr = this.head;
+        for(const c of item) {
             const idx = this.idx(c);
             if (!curr?.children[idx]) {
                 return undefined;
@@ -58,18 +93,19 @@ export default class Trie {
             return res;
         }
 
-        //Go through every character from the latest node
-        for (let i = 0; i < curr.children.length; i++) {
-            if (curr.children[i]) {
-                const nextStr = str + curr.children[i].value;
-                if (curr.children[i].isWord) {
-                    res.push(nextStr);
-                }
-                //call recursively
-                this.dfs(curr.children[i], res, nextStr);
-            }
+        if (curr.isWord) {
+            res.push(str);
         }
-        console.log(res)
+
+        //Go through every character from the latest node
+        for (let i in curr.children) {
+            //pre
+            const nextStr = str + curr.children[i].value;
+            //call recursively
+            this.dfs(curr.children[i], res, nextStr);
+        }
+
+        //post
         return res;
     }
 
